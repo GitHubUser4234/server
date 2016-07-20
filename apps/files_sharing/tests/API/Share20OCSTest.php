@@ -483,8 +483,7 @@ class Share20OCSTest extends \Test\TestCase {
 			['group', $group],
 		]));
 
-		$expected = new \OC_OCS_Result([$result]);
-		$this->assertEquals($expected->getData(), $ocs->getShare($share->getId())->getData());
+		$this->assertEquals($result, $ocs->getShare($share->getId())->getData()['data'][0]);
 	}
 
 	/**
@@ -765,7 +764,7 @@ class Share20OCSTest extends \Test\TestCase {
 			}))
 			->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->createShare();
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -878,7 +877,7 @@ class Share20OCSTest extends \Test\TestCase {
 			}))
 			->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->createShare();
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1048,7 +1047,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->createShare();
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1092,7 +1091,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->createShare();
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1139,7 +1138,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->createShare();
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1336,7 +1335,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1376,7 +1375,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1414,7 +1413,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1561,7 +1560,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1604,7 +1603,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1644,7 +1643,7 @@ class Share20OCSTest extends \Test\TestCase {
 			})
 		)->will($this->returnArgument(0));
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1686,7 +1685,7 @@ class Share20OCSTest extends \Test\TestCase {
 
 		$this->shareManager->method('getSharedWith')->willReturn([]);
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);
@@ -1753,7 +1752,7 @@ class Share20OCSTest extends \Test\TestCase {
 
 		$this->shareManager->method('getSharedWith')->willReturn([]);
 
-		$expected = new DataResponse(null);
+		$expected = new DataResponse(['data' => null]);
 		$result = $ocs->updateShare(42);
 
 		$this->assertInstanceOf(get_class($expected), $result);

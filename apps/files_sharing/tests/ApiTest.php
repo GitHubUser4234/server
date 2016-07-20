@@ -139,7 +139,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(19, $data['permissions']);
 		$this->assertEmpty($data['expiration']);
 
@@ -163,7 +163,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(31, $data['permissions']);
 		$this->assertEmpty($data['expiration']);
 
@@ -188,7 +188,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(19, $data['permissions']);
 		$this->assertEmpty($data['expiration']);
 
@@ -211,7 +211,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(31, $data['permissions']);
 		$this->assertEmpty($data['expiration']);
 
@@ -234,7 +234,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(1, $data['permissions']);
 		$this->assertEmpty($data['expiration']);
 		$this->assertTrue(is_string($data['token']));
@@ -262,7 +262,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals(
 			\OCP\Constants::PERMISSION_READ |
 			\OCP\Constants::PERMISSION_CREATE |
@@ -331,7 +331,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// setting new password should succeed
 		$data2 = [
@@ -381,7 +381,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		$this->shareManager->getShareById('ocinternal:'.$data['id']);
 
@@ -404,7 +404,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		$this->shareManager->getShareById('ocinternal:' . $data['id']);
 
@@ -452,7 +452,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$this->assertTrue(count($result->getData()) === 1);
+		$this->assertTrue(count($result->getData()['data']) === 1);
 
 		$this->shareManager->deleteShare($share);
 	}
@@ -481,7 +481,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$this->assertTrue(count($result->getData()) === 2);
+		$this->assertTrue(count($result->getData()['data']) === 2);
 
 		$this->shareManager->deleteShare($share1);
 		$this->shareManager->deleteShare($share2);
@@ -500,7 +500,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// check if we have a token
 		$this->assertTrue(is_string($data['token']));
@@ -516,7 +516,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals($url, current($data)['url']);
 
 		// check for path
@@ -525,7 +525,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals($url, current($data)['url']);
 
 		// check in share id
@@ -534,7 +534,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShare($id);
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertEquals($url, current($data)['url']);
 
 		$request = $this->createRequest([]);
@@ -571,7 +571,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share created from testCreateShare()
-		$this->assertTrue(count($result->getData()) === 2);
+		$this->assertTrue(count($result->getData()['data']) === 2);
 
 		$this->shareManager->deleteShare($share1);
 		$this->shareManager->deleteShare($share2);
@@ -606,7 +606,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share
-		$this->assertTrue(count($result->getData()) === 1);
+		$this->assertTrue(count($result->getData()['data']) === 1);
 
 		// now also ask for the reshares
 		$request = $this->createRequest(['path' => $this->filename, 'reshares' => 'true']);
@@ -615,7 +615,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// now we should get two shares, the initial share and the reshare
-		$this->assertCount(2, $result->getData());
+		$this->assertCount(2, $result->getData()['data']);
 
 		$this->shareManager->deleteShare($share1);
 		$this->shareManager->deleteShare($share2);
@@ -642,7 +642,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share created from testCreateShare()
-		$this->assertEquals(1, count($result->getData()));
+		$this->assertEquals(1, count($result->getData()['data']));
 
 		$this->shareManager->deleteShare($share1);
 	}
@@ -675,7 +675,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$this->assertTrue(count($result->getData()) === 1);
+		$this->assertTrue(count($result->getData()['data']) === 1);
 
 		$this->shareManager->deleteShare($share1);
 		$this->shareManager->deleteShare($share2);
@@ -748,7 +748,7 @@ class ApiTest extends TestCase {
 			$ocs->cleanup();
 
 			// test should return one share within $this->folder
-			$data = $result->getData();
+			$data = $result->getData()['data'];
 
 			$this->assertEquals($value['expectedResult'], $data[0]['path']);
 		}
@@ -787,7 +787,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// we should get exactly one result
 		$this->assertCount(1, $data);
@@ -837,7 +837,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// we should get exactly one result
 		$this->assertCount(1, $data);
@@ -852,7 +852,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// we should get exactly one result
 		$this->assertCount(1, $data);
@@ -867,7 +867,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// we should get exactly one result
 		$this->assertCount(1, $data);
@@ -914,7 +914,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data1 = $result1->getData();
+		$data1 = $result1->getData()['data'];
 		$this->assertCount(1, $data1);
 		$s1 = reset($data1);
 
@@ -924,7 +924,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data2 = $result2->getData();
+		$data2 = $result2->getData()['data'];
 		$this->assertCount(1, $data2);
 		$s2 = reset($data2);
 
@@ -975,7 +975,7 @@ class ApiTest extends TestCase {
 		$ocs->cleanup();
 
 		// test should return one share within $this->folder
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		// we should get exactly one result
 		$this->assertCount(1, $data);
@@ -1490,7 +1490,7 @@ class ApiTest extends TestCase {
 		}
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertTrue(is_string($data['token']));
 		$this->assertEquals($date, substr($data['expiration'], 0, 10));
 
@@ -1524,7 +1524,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->createShare();
 		$ocs->cleanup();
 
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 		$this->assertTrue(is_string($data['token']));
 		$this->assertEquals($date->format('Y-m-d') . ' 00:00:00', $data['expiration']);
 
@@ -1612,7 +1612,7 @@ class ApiTest extends TestCase {
 		$ocs = $this->createOCS($request, self::TEST_FILES_SHARING_API_USER1);
 		$result = $ocs->createShare();
 		$ocs->cleanup();
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		$topId = $data['id'];
 
@@ -1636,7 +1636,7 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$this->assertEmpty($result->getData());
+		$this->assertEmpty($result->getData()['data']);
 	}
 
 	/**
@@ -1653,7 +1653,7 @@ class ApiTest extends TestCase {
 		$ocs = $this->createOCS($request, self::TEST_FILES_SHARING_API_USER1);
 		$result = $ocs->createShare();
 		$ocs->cleanup();
-		$data = $result->getData();
+		$data = $result->getData()['data'];
 
 		$topId = $data['id'];
 
@@ -1677,6 +1677,6 @@ class ApiTest extends TestCase {
 		$result = $ocs->getShares();
 		$ocs->cleanup();
 
-		$this->assertEmpty($result->getData());
+		$this->assertEmpty($result->getData()['data']);
 	}
 }
