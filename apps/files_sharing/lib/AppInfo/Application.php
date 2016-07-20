@@ -122,8 +122,11 @@ class Application extends App {
 			);
 		});
 
-		$container->registerService('OCSShareAPIMiddleware', function (SimpleContainer $c) {
-			return new OCSShareAPIMiddleware();
+		$container->registerService('OCSShareAPIMiddleware', function (SimpleContainer $c) use ($server) {
+			return new OCSShareAPIMiddleware(
+				$server->getShareManager(),
+				$server->getL10N($c->query('AppName'))
+			);
 		});
 
 		// Execute middlewares

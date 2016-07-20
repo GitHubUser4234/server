@@ -191,13 +191,6 @@ class Share20OCS extends OCSController {
 	 * @throws OCSNotFoundException
 	 */
 	public function getShare($id) {
-		if (!$this->shareManager->shareApiEnabled()) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Share API is disabled')
-			];
-		}
-
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
@@ -224,17 +217,10 @@ class Share20OCS extends OCSController {
 	 * @CORS
 	 *
 	 * @param string $id
-	 * @return \OC\OCS\Result
+	 * @return DataResponse
 	 * @throws OCSNotFoundException
 	 */
 	public function deleteShare($id) {
-		if (!$this->shareManager->shareApiEnabled()) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Share API is disabled')
-			];
-		}
-
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
@@ -266,13 +252,6 @@ class Share20OCS extends OCSController {
 	 */
 	public function createShare() {
 		$share = $this->shareManager->newShare();
-
-		if (!$this->shareManager->shareApiEnabled()) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Share API is disabled')
-			];
-		}
 
 		// Verify path
 		$path = $this->request->getParam('path', null);
@@ -522,10 +501,6 @@ class Share20OCS extends OCSController {
 	 * @throws OCSNotFoundException
 	 */
 	public function getShares() {
-		if (!$this->shareManager->shareApiEnabled()) {
-			return [];
-		}
-
 		$sharedWithMe = $this->request->getParam('shared_with_me', null);
 		$reshares = $this->request->getParam('reshares', null);
 		$subfiles = $this->request->getParam('subfiles');
@@ -591,13 +566,6 @@ class Share20OCS extends OCSController {
 	 * @throws OCSNotFoundException
 	 */
 	public function updateShare($id) {
-		if (!$this->shareManager->shareApiEnabled()) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Share API is disabled')
-			];
-		}
-
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
