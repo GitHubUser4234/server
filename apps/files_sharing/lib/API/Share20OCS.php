@@ -21,6 +21,8 @@
  */
 namespace OCA\Files_Sharing\API;
 
+use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\OCS\OCSNotFoundException;
 use OCP\AppFramework\OCSController;
 use OCP\Files\NotFoundException;
 use OCP\IGroupManager;
@@ -180,9 +182,11 @@ class Share20OCS extends OCSController {
 	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @CORS
 	 *
 	 * @param string $id
-	 * @return array
+	 * @return DataResponse
+	 * @throws OCSNotFoundException
 	 */
 	public function getShare($id) {
 		if (!$this->shareManager->shareApiEnabled()) {
@@ -195,27 +199,19 @@ class Share20OCS extends OCSController {
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Wrong share ID, share doesn\'t exist'),
-			];
+			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
 		if ($this->canAccessShare($share)) {
 			try {
 				$share = $this->formatShare($share);
-				return [
-					'data' => [$share],
-				];
+				return new DataResponse([$share]);
 			} catch (NotFoundException $e) {
 				//Fall trough
 			}
 		}
 
-		return [
-			'statuscode' => 404,
-			'message' => $this->l->t('Wrong share ID, share doesn\'t exist')
-		];
+		throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 	}
 
 	/**
@@ -223,9 +219,11 @@ class Share20OCS extends OCSController {
 	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @CORS
 	 *
 	 * @param string $id
 	 * @return \OC\OCS\Result
+	 * @throws OCSNotFoundException
 	 */
 	public function deleteShare($id) {
 		if (!$this->shareManager->shareApiEnabled()) {
@@ -238,41 +236,34 @@ class Share20OCS extends OCSController {
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Wrong share ID, share doesn\'t exist')
-			];
+			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
 		try {
 			$share->getNode()->lock(ILockingProvider::LOCK_SHARED);
 		} catch (LockedException $e) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('could not delete share')
-			];
+			throw new OCSNotFoundException($this->l->t('could not delete share'));
 		}
 
 		if (!$this->canAccessShare($share)) {
 			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Could not delete share')
-			];
+			throw new OCSNotFoundException($this->l->t('Could not delete share'));
 		}
 
 		$this->shareManager->deleteShare($share);
 
 		$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 
-		return [];
+		return new DataResponse([]);
 	}
 
 	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @CORS
 	 *
-	 * @return array
+	 * @return DataResponse
+	 * @throws OCSNotFoundException
 	 */
 	public function createShare() {
 		$share = $this->shareManager->newShare();
@@ -287,20 +278,14 @@ class Share20OCS extends OCSController {
 		// Verify path
 		$path = $this->request->getParam('path', null);
 		if ($path === null) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Please specify a file or folder path')
-			];
+			throw new OCSNotFoundException($this->l->t('Please specify a file or folder path'));
 		}
 
 		$userFolder = $this->rootFolder->getUserFolder($this->currentUser->getUID());
 		try {
 			$path = $userFolder->get($path);
 		} catch (NotFoundException $e) {
-			return [
-				'statuscode' => 404,
-				'messagecode' => $this->l->t('Wrong path, file/folder doesn\'t exist')
-			];
+			throw new OCSNotFoundException($this->l->t('Wrong path, file/folder doesn\'t exist'));
 		}
 
 		$share->setNode($path);
@@ -308,10 +293,7 @@ class Share20OCS extends OCSController {
 		try {
 			$share->getNode()->lock(ILockingProvider::LOCK_SHARED);
 		} catch (LockedException $e) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Could not create share')
-			];
+			throw new OCSNotFoundException($this->l->t('Could not create share'));
 		}
 
 		// Parse permissions (if available)
@@ -324,10 +306,7 @@ class Share20OCS extends OCSController {
 
 		if ($permissions < 0 || $permissions > \OCP\Constants::PERMISSION_ALL) {
 			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-			return [
-				'statuscode' => 404,
-				'message' => 'invalid permissions'
-			];
+			throw new OCSNotFoundException($this->l->t('invalid permissions'));
 		}
 
 		// Shares always require read permissions
@@ -355,29 +334,20 @@ class Share20OCS extends OCSController {
 			// Valid user is required to share
 			if ($shareWith === null || !$this->userManager->userExists($shareWith)) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Please specify a valid user')
-				];
+				throw new OCSNotFoundException($this->l->t('Please specify a valid user'));
 			}
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} else if ($shareType === \OCP\Share::SHARE_TYPE_GROUP) {
 			if (!$this->shareManager->allowGroupSharing()) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Group sharing is disabled by the administrator')
-				];
+				throw new OCSNotFoundException($this->l->t('Group sharing is disabled by the administrator'));
 			}
 
 			// Valid group is required to share
 			if ($shareWith === null || !$this->groupManager->groupExists($shareWith)) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Please specify a valid group')
-				];
+				throw new OCSNotFoundException($this->l->t('Please specify a valid group'));
 			}
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
@@ -385,10 +355,7 @@ class Share20OCS extends OCSController {
 			//Can we even share links?
 			if (!$this->shareManager->shareApiAllowLinks()) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Public link sharing is disabled by the administrator')
-				];
+				throw new OCSNotFoundException($this->l->t('Public link sharing is disabled by the administrator'));
 			}
 
 			/*
@@ -398,7 +365,7 @@ class Share20OCS extends OCSController {
 			$existingShares = $this->shareManager->getSharesBy($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_LINK, $path, false, 1, 0);
 			if (!empty($existingShares)) {
 				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-				return ['data' => $this->formatShare($existingShares[0])];
+				return new DataResponse($this->formatShare($existingShares[0]));
 			}
 
 			$publicUpload = $this->request->getParam('publicUpload', null);
@@ -415,10 +382,7 @@ class Share20OCS extends OCSController {
 				// Public upload can only be set for folders
 				if ($path instanceof \OCP\Files\File) {
 					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-					return [
-						'statuscode' => 404,
-						'message' => $this->l->t('Public upload is only possible for publicly shared folders')
-					];
+					throw new OCSNotFoundException($this->l->t('Public upload is only possible for publicly shared folders'));
 				}
 
 				$share->setPermissions(
@@ -447,10 +411,7 @@ class Share20OCS extends OCSController {
 					$share->setExpirationDate($expireDate);
 				} catch (\Exception $e) {
 					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-					return [
-						'statuscode' => 404,
-						'message' => $this->l->t('Invalid date, date format must be YYYY-MM-DD')
-					];
+					throw new OCSNotFoundException($this->l->t('Invalid date, date format must be YYYY-MM-DD'));
 				}
 			}
 
@@ -502,7 +463,7 @@ class Share20OCS extends OCSController {
 
 	/**
 	 * @param \OCP\Files\File|\OCP\Files\Folder $node
-	 * @return array
+	 * @return DataResponse
 	 */
 	private function getSharedWithMe($node = null) {
 		$userShares = $this->shareManager->getSharedWith($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_USER, $node, -1, 0);
@@ -521,12 +482,12 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		return ['data' => $formatted];
+		return new DataResponse($formatted);
 	}
 
 	/**
 	 * @param \OCP\Files\Folder $folder
-	 * @return array
+	 * @return DataResponse
 	 */
 	private function getSharesInDir($folder) {
 		if (!($folder instanceof \OCP\Files\Folder)) {
@@ -557,7 +518,7 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		return ['data' => $formatted];
+		return new DataResponse($formatted);
 	}
 
 	/**
@@ -565,6 +526,7 @@ class Share20OCS extends OCSController {
 	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @CORS
 	 *
 	 * - Get shares by the current user
 	 * - Get shares by the current user and reshares (?reshares=true)
@@ -572,7 +534,8 @@ class Share20OCS extends OCSController {
 	 * - Get shares for a specific path (?path=...)
 	 * - Get all shares in a folder (?subfiles=true&path=..)
 	 *
-	 * @return array
+	 * @return DataResponse
+	 * @throws OCSNotFoundException
 	 */
 	public function getShares() {
 		if (!$this->shareManager->shareApiEnabled()) {
@@ -590,15 +553,9 @@ class Share20OCS extends OCSController {
 				$path = $userFolder->get($path);
 				$path->lock(ILockingProvider::LOCK_SHARED);
 			} catch (\OCP\Files\NotFoundException $e) {
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Wrong path, file/folder doesn\'t exist')
-				];
+				throw new OCSNotFoundException($this->l->t('Wrong path, file/folder doesn\'t exist'));
 			} catch (LockedException $e) {
-				return [
-					'statuscode' => 404,
-					'message' => $this->l->t('Could not lock path')
-				];
+				throw new OCSNotFoundException($this->l->t('Could not lock path'));
 			}
 		}
 
@@ -648,7 +605,7 @@ class Share20OCS extends OCSController {
 			$path->unlock(ILockingProvider::LOCK_SHARED);
 		}
 
-		return ['data' => $formatted];
+		return new DataResponse($formatted);
 	}
 
 	/**
@@ -656,7 +613,8 @@ class Share20OCS extends OCSController {
 	 * @NoCSRFRequired
 	 *
 	 * @param int $id
-	 * @return array
+	 * @return DataResponse
+	 * @throws OCSNotFoundException
 	 */
 	public function updateShare($id) {
 		if (!$this->shareManager->shareApiEnabled()) {
@@ -669,20 +627,14 @@ class Share20OCS extends OCSController {
 		try {
 			$share = $this->getShareById($id);
 		} catch (ShareNotFound $e) {
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Wrong share ID, share doesn\'t exist')
-			];
+			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
 		$share->getNode()->lock(\OCP\Lock\ILockingProvider::LOCK_SHARED);
 
 		if (!$this->canAccessShare($share)) {
 			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
-			return [
-				'statuscode' => 404,
-				'message' => $this->l->t('Wrong share ID, share doesn\'t exist')
-			];
+			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
 		$permissions = $this->request->getParam('permissions', null);
@@ -798,6 +750,7 @@ class Share20OCS extends OCSController {
 			$incomingShares = $this->shareManager->getSharedWith($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_USER, $share->getNode(), -1, 0);
 			$incomingShares = array_merge($incomingShares, $this->shareManager->getSharedWith($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_GROUP, $share->getNode(), -1, 0));
 
+			/** @var \OCP\Share\IShare[] $incomingShares */
 			if (!empty($incomingShares)) {
 				$maxPermissions = 0;
 				foreach ($incomingShares as $incomingShare) {
@@ -827,7 +780,7 @@ class Share20OCS extends OCSController {
 
 		$share->getNode()->unlock(\OCP\Lock\ILockingProvider::LOCK_SHARED);
 
-		return ['data' => $this->formatShare($share)];
+		return new DataResponse($this->formatShare($share));
 	}
 
 	/**
