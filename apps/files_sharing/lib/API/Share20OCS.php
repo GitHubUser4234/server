@@ -395,7 +395,7 @@ class Share20OCS extends OCSController {
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} else {
-			throw new OCSBadRequestException($this->l->t('Unknown share type');
+			throw new OCSBadRequestException($this->l->t('Unknown share type'));
 		}
 
 		$share->setShareType($shareType);
