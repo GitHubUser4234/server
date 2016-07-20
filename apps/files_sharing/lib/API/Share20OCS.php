@@ -203,7 +203,7 @@ class Share20OCS extends OCSController {
 		if ($this->canAccessShare($share)) {
 			try {
 				$share = $this->formatShare($share);
-				return new DataResponse([$share]);
+				return new DataResponse(['data' => [$share]]);
 			} catch (NotFoundException $e) {
 				//Fall trough
 			}
@@ -242,7 +242,7 @@ class Share20OCS extends OCSController {
 
 		$this->shareManager->deleteShare($share);
 
-		return new DataResponse([]);
+		return new DataResponse();
 	}
 
 	/**
@@ -343,7 +343,7 @@ class Share20OCS extends OCSController {
 			 */
 			$existingShares = $this->shareManager->getSharesBy($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_LINK, $path, false, 1, 0);
 			if (!empty($existingShares)) {
-				return new DataResponse($this->formatShare($existingShares[0]));
+				return new DataResponse(['data' => $this->formatShare($existingShares[0])]);
 			}
 
 			$publicUpload = $this->request->getParam('publicUpload', null);
@@ -412,7 +412,7 @@ class Share20OCS extends OCSController {
 
 		$output = $this->formatShare($share);
 
-		return new DataResponse($output);
+		return new DataResponse(['data' => $output]);
 	}
 
 	/**
@@ -436,7 +436,7 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		return new DataResponse($formatted);
+		return new DataResponse(['data' => $formatted]);
 	}
 
 	/**
@@ -470,7 +470,7 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		return new DataResponse($formatted);
+		return new DataResponse(['data' => $formatted]);
 	}
 
 	/**
@@ -543,7 +543,7 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		return new DataResponse($formatted);
+		return new DataResponse(['data' => $formatted]);
 	}
 
 	/**
@@ -678,7 +678,7 @@ class Share20OCS extends OCSController {
 			throw new OCSBadRequestException($e->getMessage());
 		}
 
-		return new DataResponse($this->formatShare($share));
+		return new DataResponse(['data' => $this->formatShare($share)]);
 	}
 
 	/**
