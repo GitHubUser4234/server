@@ -61,6 +61,8 @@ class Share20OCS extends OCSController {
 	private $currentUser;
 	/** @var IL10N */
 	private $l;
+	/** @var \OCP\Files\Node */
+	private $lockedNode;
 
 	/**
 	 * Share20OCS constructor.
@@ -240,19 +242,16 @@ class Share20OCS extends OCSController {
 		}
 
 		try {
-			$share->getNode()->lock(ILockingProvider::LOCK_SHARED);
+			$this->lock($share->getNode());
 		} catch (LockedException $e) {
 			throw new OCSNotFoundException($this->l->t('could not delete share'));
 		}
 
 		if (!$this->canAccessShare($share)) {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			throw new OCSNotFoundException($this->l->t('Could not delete share'));
 		}
 
 		$this->shareManager->deleteShare($share);
-
-		$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 
 		return new DataResponse([]);
 	}
@@ -291,7 +290,7 @@ class Share20OCS extends OCSController {
 		$share->setNode($path);
 
 		try {
-			$share->getNode()->lock(ILockingProvider::LOCK_SHARED);
+			$this->lock($share->getNode());
 		} catch (LockedException $e) {
 			throw new OCSNotFoundException($this->l->t('Could not create share'));
 		}
@@ -305,7 +304,6 @@ class Share20OCS extends OCSController {
 		}
 
 		if ($permissions < 0 || $permissions > \OCP\Constants::PERMISSION_ALL) {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			throw new OCSNotFoundException($this->l->t('invalid permissions'));
 		}
 
@@ -333,20 +331,17 @@ class Share20OCS extends OCSController {
 		if ($shareType === \OCP\Share::SHARE_TYPE_USER) {
 			// Valid user is required to share
 			if ($shareWith === null || !$this->userManager->userExists($shareWith)) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				throw new OCSNotFoundException($this->l->t('Please specify a valid user'));
 			}
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} else if ($shareType === \OCP\Share::SHARE_TYPE_GROUP) {
 			if (!$this->shareManager->allowGroupSharing()) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				throw new OCSNotFoundException($this->l->t('Group sharing is disabled by the administrator'));
 			}
 
 			// Valid group is required to share
 			if ($shareWith === null || !$this->groupManager->groupExists($shareWith)) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				throw new OCSNotFoundException($this->l->t('Please specify a valid group'));
 			}
 			$share->setSharedWith($shareWith);
@@ -354,7 +349,6 @@ class Share20OCS extends OCSController {
 		} else if ($shareType === \OCP\Share::SHARE_TYPE_LINK) {
 			//Can we even share links?
 			if (!$this->shareManager->shareApiAllowLinks()) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				throw new OCSNotFoundException($this->l->t('Public link sharing is disabled by the administrator'));
 			}
 
@@ -364,7 +358,6 @@ class Share20OCS extends OCSController {
 			 */
 			$existingShares = $this->shareManager->getSharesBy($this->currentUser->getUID(), \OCP\Share::SHARE_TYPE_LINK, $path, false, 1, 0);
 			if (!empty($existingShares)) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return new DataResponse($this->formatShare($existingShares[0]));
 			}
 
@@ -372,7 +365,6 @@ class Share20OCS extends OCSController {
 			if ($publicUpload === 'true') {
 				// Check if public upload is allowed
 				if (!$this->shareManager->shareApiLinkAllowPublicUpload()) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					return [
 						'statuscode' => 403,
 						'message' => $this->l->t('Public upload disabled by the administrator')
@@ -381,7 +373,6 @@ class Share20OCS extends OCSController {
 
 				// Public upload can only be set for folders
 				if ($path instanceof \OCP\Files\File) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					throw new OCSNotFoundException($this->l->t('Public upload is only possible for publicly shared folders'));
 				}
 
@@ -410,14 +401,12 @@ class Share20OCS extends OCSController {
 					$expireDate = $this->parseDate($expireDate);
 					$share->setExpirationDate($expireDate);
 				} catch (\Exception $e) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					throw new OCSNotFoundException($this->l->t('Invalid date, date format must be YYYY-MM-DD'));
 				}
 			}
 
 		} else if ($shareType === \OCP\Share::SHARE_TYPE_REMOTE) {
 			if (!$this->shareManager->outgoingServer2ServerSharesAllowed()) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return [
 					'statuscode' => 403,
 					'message' => $this->l->t('Sharing %s failed because the back end does not allow shares from type %s', [$path->getPath(), $shareType])
@@ -427,7 +416,6 @@ class Share20OCS extends OCSController {
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} else {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			return [
 				'statuscode' => 400,
 				$this->l->t('Unknown share type')
@@ -441,13 +429,11 @@ class Share20OCS extends OCSController {
 			$share = $this->shareManager->createShare($share);
 		} catch (GenericShareException $e) {
 			$code = $e->getCode() === 0 ? 403 : $e->getCode();
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			return [
 				'statuscode' => $code,
 				'message' => $e->getHint()
 			];
 		}catch (\Exception $e) {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			return [
 				'statuscode' => 403,
 				'message' => $e->getMessage()
@@ -455,8 +441,6 @@ class Share20OCS extends OCSController {
 		}
 
 		$output = $this->formatShare($share);
-
-		$share->getNode()->unlock(\OCP\Lock\ILockingProvider::LOCK_SHARED);
 
 		return ['data' => $output];
 	}
@@ -561,17 +545,11 @@ class Share20OCS extends OCSController {
 
 		if ($sharedWithMe === 'true') {
 			$result = $this->getSharedWithMe($path);
-			if ($path !== null) {
-				$path->unlock(ILockingProvider::LOCK_SHARED);
-			}
 			return $result;
 		}
 
 		if ($subfiles === 'true') {
 			$result = $this->getSharesInDir($path);
-			if ($path !== null) {
-				$path->unlock(ILockingProvider::LOCK_SHARED);
-			}
 			return $result;
 		}
 
@@ -601,10 +579,6 @@ class Share20OCS extends OCSController {
 			}
 		}
 
-		if ($path !== null) {
-			$path->unlock(ILockingProvider::LOCK_SHARED);
-		}
-
 		return new DataResponse($formatted);
 	}
 
@@ -630,10 +604,9 @@ class Share20OCS extends OCSController {
 			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
-		$share->getNode()->lock(\OCP\Lock\ILockingProvider::LOCK_SHARED);
+		$this->lock($share->getNode());
 
 		if (!$this->canAccessShare($share)) {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			throw new OCSNotFoundException($this->l->t('Wrong share ID, share doesn\'t exist'));
 		}
 
@@ -647,7 +620,6 @@ class Share20OCS extends OCSController {
 		 */
 		if ($share->getShareType() === \OCP\Share::SHARE_TYPE_LINK) {
 			if ($permissions === null && $password === null && $publicUpload === null && $expireDate === null) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return [
 					'statuscode' => 400,
 					'message' => 'Wrong or no update parameter given'
@@ -673,7 +645,6 @@ class Share20OCS extends OCSController {
 					\OCP\Constants::PERMISSION_CREATE, // hidden file list
 				])
 			) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return [
 					'statuscode' => 400,
 					'message' => $this->l->t('Can\'t change permissions for public share links')
@@ -687,7 +658,6 @@ class Share20OCS extends OCSController {
 				$newPermissions === (\OCP\Constants::PERMISSION_READ | \OCP\Constants::PERMISSION_CREATE | \OCP\Constants::PERMISSION_UPDATE | \OCP\Constants::PERMISSION_DELETE)
 			) {
 				if (!$this->shareManager->shareApiLinkAllowPublicUpload()) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					return [
 						'statuscode' => 403,
 						'message' => $this->l->t('Public upload disabled by the administrator')
@@ -695,7 +665,6 @@ class Share20OCS extends OCSController {
 				}
 
 				if (!($share->getNode() instanceof \OCP\Files\Folder)) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					return [
 						'statuscode' => 400,
 						'message' => $this->l->t('Public upload is only possible for publicly shared folders')
@@ -716,7 +685,6 @@ class Share20OCS extends OCSController {
 				try {
 					$expireDate = $this->parseDate($expireDate);
 				} catch (\Exception $e) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					return [
 						'statuscode' => 400,
 						'message' => $e->getMessage()
@@ -734,7 +702,6 @@ class Share20OCS extends OCSController {
 		} else {
 			// For other shares only permissions is valid.
 			if ($permissions === null) {
-				$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 				return [
 					'statuscode' => 400,
 					'message' => $this->l->t('Wrong or no update parameter given')
@@ -758,7 +725,6 @@ class Share20OCS extends OCSController {
 				}
 
 				if ($share->getPermissions() & ~$maxPermissions) {
-					$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 					return [
 						'statuscode' => 404,
 						'message' => $this->l->t('Cannot increase permissions')
@@ -771,14 +737,11 @@ class Share20OCS extends OCSController {
 		try {
 			$share = $this->shareManager->updateShare($share);
 		} catch (\Exception $e) {
-			$share->getNode()->unlock(ILockingProvider::LOCK_SHARED);
 			return [
 				'statuscode' => 400,
 				'message' => $e->getMessage()
 			];
 		}
-
-		$share->getNode()->unlock(\OCP\Lock\ILockingProvider::LOCK_SHARED);
 
 		return new DataResponse($this->formatShare($share));
 	}
@@ -865,5 +828,23 @@ class Share20OCS extends OCSController {
 		}
 
 		return $share;
+	}
+
+	/**
+	 * Lock a Node
+	 * @param \OCP\Files\Node $node
+	 */
+	private function lock(\OCP\Files\Node $node) {
+		$node->lock(ILockingProvider::LOCK_SHARED);
+		$this->lockedNode = $node;
+	}
+
+	/**
+	 * Cleanup the remaining locks
+	 */
+	public function cleanup() {
+		if ($this->lockedNode !== null) {
+			$this->lockedNode->unlock(ILockingProvider::LOCK_SHARED);
+		}
 	}
 }
