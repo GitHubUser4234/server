@@ -22,6 +22,9 @@
 namespace OCA\Files_Sharing\API;
 
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\OCS\OCSBadRequestException;
+use OCP\AppFramework\OCS\OCSException;
+use OCP\AppFramework\OCS\OCSForbiddenException;
 use OCP\AppFramework\OCS\OCSNotFoundException;
 use OCP\AppFramework\OCSController;
 use OCP\Files\NotFoundException;
@@ -249,6 +252,9 @@ class Share20OCS extends OCSController {
 	 *
 	 * @return DataResponse
 	 * @throws OCSNotFoundException
+	 * @throws OCSForbiddenException
+	 * @throws OCSBadRequestException
+	 * @throws OCSException
 	 */
 	public function createShare() {
 		$share = $this->shareManager->newShare();
@@ -344,10 +350,7 @@ class Share20OCS extends OCSController {
 			if ($publicUpload === 'true') {
 				// Check if public upload is allowed
 				if (!$this->shareManager->shareApiLinkAllowPublicUpload()) {
-					return [
-						'statuscode' => 403,
-						'message' => $this->l->t('Public upload disabled by the administrator')
-					];
+					throw new OCSForbiddenException($this->l->t('Public upload disabled by the administrator'));
 				}
 
 				// Public upload can only be set for folders
@@ -386,19 +389,13 @@ class Share20OCS extends OCSController {
 
 		} else if ($shareType === \OCP\Share::SHARE_TYPE_REMOTE) {
 			if (!$this->shareManager->outgoingServer2ServerSharesAllowed()) {
-				return [
-					'statuscode' => 403,
-					'message' => $this->l->t('Sharing %s failed because the back end does not allow shares from type %s', [$path->getPath(), $shareType])
-				];
+				throw new OCSForbiddenException($this->l->t('Sharing %s failed because the back end does not allow shares from type %s', [$path->getPath(), $shareType]));
 			}
 
 			$share->setSharedWith($shareWith);
 			$share->setPermissions($permissions);
 		} else {
-			return [
-				'statuscode' => 400,
-				$this->l->t('Unknown share type')
-			];
+			throw new OCSBadRequestException($this->l->t('Unknown share type');
 		}
 
 		$share->setShareType($shareType);
@@ -408,20 +405,14 @@ class Share20OCS extends OCSController {
 			$share = $this->shareManager->createShare($share);
 		} catch (GenericShareException $e) {
 			$code = $e->getCode() === 0 ? 403 : $e->getCode();
-			return [
-				'statuscode' => $code,
-				'message' => $e->getHint()
-			];
+			throw new OCSException($e->getHint(), $code);
 		}catch (\Exception $e) {
-			return [
-				'statuscode' => 403,
-				'message' => $e->getMessage()
-			];
+			throw new OCSForbiddenException($e->getMessage());
 		}
 
 		$output = $this->formatShare($share);
 
-		return ['data' => $output];
+		return new DataResponse($output);
 	}
 
 	/**
@@ -451,13 +442,11 @@ class Share20OCS extends OCSController {
 	/**
 	 * @param \OCP\Files\Folder $folder
 	 * @return DataResponse
+	 * @throws OCSBadRequestException
 	 */
 	private function getSharesInDir($folder) {
 		if (!($folder instanceof \OCP\Files\Folder)) {
-			return [
-				'statuscode' => 400,
-				'message' => $this->l->t('Not a directory')
-			];
+			throw new OCSBadRequestException($this->l->t('Not a directory'));
 		}
 
 		$nodes = $folder->getDirectoryListing();
@@ -564,6 +553,8 @@ class Share20OCS extends OCSController {
 	 * @param int $id
 	 * @return DataResponse
 	 * @throws OCSNotFoundException
+	 * @throws OCSBadRequestException
+	 * @throws OCSForbiddenException
 	 */
 	public function updateShare($id) {
 		try {
@@ -588,10 +579,7 @@ class Share20OCS extends OCSController {
 		 */
 		if ($share->getShareType() === \OCP\Share::SHARE_TYPE_LINK) {
 			if ($permissions === null && $password === null && $publicUpload === null && $expireDate === null) {
-				return [
-					'statuscode' => 400,
-					'message' => 'Wrong or no update parameter given'
-				];
+				throw new OCSBadRequestException($this->l->t('Wrong or no update parameter given'));
 			}
 
 			$newPermissions = null;
@@ -613,10 +601,7 @@ class Share20OCS extends OCSController {
 					\OCP\Constants::PERMISSION_CREATE, // hidden file list
 				])
 			) {
-				return [
-					'statuscode' => 400,
-					'message' => $this->l->t('Can\'t change permissions for public share links')
-				];
+				throw new OCSBadRequestException($this->l->t('Can\'t change permissions for public share links'));
 			}
 
 			if (
@@ -626,17 +611,11 @@ class Share20OCS extends OCSController {
 				$newPermissions === (\OCP\Constants::PERMISSION_READ | \OCP\Constants::PERMISSION_CREATE | \OCP\Constants::PERMISSION_UPDATE | \OCP\Constants::PERMISSION_DELETE)
 			) {
 				if (!$this->shareManager->shareApiLinkAllowPublicUpload()) {
-					return [
-						'statuscode' => 403,
-						'message' => $this->l->t('Public upload disabled by the administrator')
-					];
+					throw new OCSForbiddenException($this->l->t('Public upload disabled by the administrator'));
 				}
 
 				if (!($share->getNode() instanceof \OCP\Files\Folder)) {
-					return [
-						'statuscode' => 400,
-						'message' => $this->l->t('Public upload is only possible for publicly shared folders')
-					];
+					throw new OCSBadRequestException($this->l->t('Public upload is only possible for publicly shared folders'));
 				}
 
 				// normalize to correct public upload permissions
@@ -653,10 +632,7 @@ class Share20OCS extends OCSController {
 				try {
 					$expireDate = $this->parseDate($expireDate);
 				} catch (\Exception $e) {
-					return [
-						'statuscode' => 400,
-						'message' => $e->getMessage()
-					];
+					throw new OCSBadRequestException($e->getMessage());
 				}
 				$share->setExpirationDate($expireDate);
 			}
@@ -670,10 +646,7 @@ class Share20OCS extends OCSController {
 		} else {
 			// For other shares only permissions is valid.
 			if ($permissions === null) {
-				return [
-					'statuscode' => 400,
-					'message' => $this->l->t('Wrong or no update parameter given')
-				];
+				throw new OCSBadRequestException($this->l->t('Wrong or no update parameter given'));
 			} else {
 				$permissions = (int)$permissions;
 				$share->setPermissions($permissions);
@@ -693,10 +666,7 @@ class Share20OCS extends OCSController {
 				}
 
 				if ($share->getPermissions() & ~$maxPermissions) {
-					return [
-						'statuscode' => 404,
-						'message' => $this->l->t('Cannot increase permissions')
-					];
+					throw new OCSBadRequestException($this->l->t('Cannot increase permissions'));
 				}
 			}
 		}
@@ -705,10 +675,7 @@ class Share20OCS extends OCSController {
 		try {
 			$share = $this->shareManager->updateShare($share);
 		} catch (\Exception $e) {
-			return [
-				'statuscode' => 400,
-				'message' => $e->getMessage()
-			];
+			throw new OCSBadRequestException($e->getMessage());
 		}
 
 		return new DataResponse($this->formatShare($share));
