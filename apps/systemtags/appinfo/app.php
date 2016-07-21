@@ -1,8 +1,9 @@
 <?php
 /**
- * @author Joas Schilling <nickvergessen@owncloud.com>
+ * @author Joas Schilling <coding@schilljs.com>
  * @author Vincent Petry <pvince81@owncloud.com>
  *
+ * @copyright Copyright (c) 2016 Joas Schilling <coding@schilljs.com>
  * @copyright Copyright (c) 2016, ownCloud, Inc.
  * @license AGPL-3.0
  *
@@ -76,6 +77,9 @@ $mapperListener = function(MapperEvent $event) use ($activityManager) {
 
 $eventDispatcher->addListener(MapperEvent::EVENT_ASSIGN, $mapperListener);
 $eventDispatcher->addListener(MapperEvent::EVENT_UNASSIGN, $mapperListener);
+
+$app = new \OCA\SystemTags\AppInfo\Application();
+$app->registerAdminPage();
 
 $l = \OC::$server->getL10N('systemtags');
 
