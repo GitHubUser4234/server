@@ -93,6 +93,7 @@ class Configuration {
 		'ldapPagingSize' => null,
 		'turnOnPasswordChange' => false,
 		'ldapDynamicGroupMemberURL' => null,
+		'ldapDefaultPPolicyDN' => null,
 	);
 
 	/**
@@ -454,6 +455,7 @@ class Configuration {
 			'ldap_turn_on_pwd_change'           => 0,
 			'ldap_experienced_admin'            => 0,
 			'ldap_dynamic_group_member_url'     => '',
+			'ldap_default_ppolicy_dn'           => '',
 		);
 	}
 
@@ -511,6 +513,7 @@ class Configuration {
 			'ldap_turn_on_pwd_change'           => 'turnOnPasswordChange',
 			'ldap_experienced_admin'            => 'ldapExperiencedAdmin',
 			'ldap_dynamic_group_member_url'     => 'ldapDynamicGroupMemberURL',
+			'ldap_default_ppolicy_dn'           => 'ldapDefaultPPolicyDN',
 		);
 		return $array;
 	}

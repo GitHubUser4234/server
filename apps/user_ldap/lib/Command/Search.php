@@ -115,7 +115,7 @@ class Search extends Command {
 			$getMethod = 'getGroups';
 			$printID = false;
 		} else {
-			$proxy = new User_Proxy($configPrefixes, $ldapWrapper, $this->ocConfig);
+			$proxy = new User_Proxy($configPrefixes, $ldapWrapper, $this->ocConfig, \OC::$server->getNotificationManager());
 			$getMethod = 'getDisplayNames';
 			$printID = true;
 		}

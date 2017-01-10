@@ -22,6 +22,8 @@
  */
 
 /** @var $this \OCP\Route\IRouter */
+use OCA\User_LDAP\AppInfo\Application;
+
 $this->create('user_ldap_ajax_clearMappings', 'ajax/clearMappings.php')
 	->actionInclude('user_ldap/ajax/clearMappings.php');
 $this->create('user_ldap_ajax_deleteConfiguration', 'ajax/deleteConfiguration.php')
@@ -36,3 +38,13 @@ $this->create('user_ldap_ajax_testConfiguration', 'ajax/testConfiguration.php')
 	->actionInclude('user_ldap/ajax/testConfiguration.php');
 $this->create('user_ldap_ajax_wizard', 'ajax/wizard.php')
 	->actionInclude('user_ldap/ajax/wizard.php');
+
+$application = new Application();
+$application->registerRoutes($this, [
+	'routes' => [
+		['name' => 'renewPassword#tryRenewPassword', 'url' => '/renewpassword', 'verb' => 'POST'],
+		['name' => 'renewPassword#showRenewPasswordForm', 'url' => '/renewpassword/{user}', 'verb' => 'GET'],
+		['name' => 'renewPassword#cancel', 'url' => '/renewpassword/cancel', 'verb' => 'GET'],
+		['name' => 'renewPassword#showLoginFormInvalidPassword', 'url' => '/renewpassword/invalidlogin/{user}', 'verb' => 'GET'],
+	],
+]);
