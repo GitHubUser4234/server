@@ -49,8 +49,9 @@ style('user_ldap', 'renewPassword');
 			<input type="password" id="newPassword" name="newPassword"
 				placeholder="<?php echo $l->t('New password');?>"
 				data-typetoggle="#personal-show" autofocus autocomplete="off" autocapitalize="off" autocorrect="off" required/>
-			<input type="submit" id="submit" class="login primary icon-confirm" title="<?php p($l->t('Change password')); ?>" value=""/>
 		</p>
+		
+		<input type="submit" id="submit" class="login primary icon-confirm-white" title="" value="<?php p($l->t('Renew password')); ?>"/>
 
 		<?php if (!empty($_['invalidpassword']) && !empty($_['canResetPassword'])) { ?>
 		<a id="lost-password" class="warning" href="<?php p($_['resetPasswordLink']); ?>">

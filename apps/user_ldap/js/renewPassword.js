@@ -20,24 +20,24 @@
  */
 
 OCA = OCA || {};
-OCA.LDAP = {}, {
+OCA.LDAP = _.extend(OC.LDAP || {}, {
 	onRenewPassword: function () {
 		$('#submit')
-			.removeClass('icon-confirm')
+			.removeClass('icon-confirm-white')
 			.addClass('icon-loading-small')
-			.css('opacity', '1');
+			.attr('value', t('core', 'Renewing …'));
 		return true;
 	},
-};
+});
 
 $(document).ready(function() {
 	$('form[name=renewpassword]').submit(OCA.LDAP.onRenewPassword);
 	
-	if($('#newpassword').length) {
-		$('#newpassword').showPassword().keyup();
+	if($('#newPassword').length) {
+		$('#newPassword').showPassword().keyup();
 	}
-	$('#newpassword').strengthify({
-		zxcvbn: OC.linkTo('core','vendor/zxcvbn/zxcvbn.js'),
+	$('#newPassword').strengthify({
+		zxcvbn: OC.linkTo('core','vendor/zxcvbn/dist/zxcvbn.js'),
 		titles: [
 			t('core', 'Very weak password'),
 			t('core', 'Weak password'),

@@ -82,7 +82,8 @@ class RenewPasswordController extends Controller {
 	/**
 	 * @PublicPage
 	 * @NoCSRFRequired
-	 *
+	 * @UseSession
+	 
 	 * @param string $user
 	 *
 	 * @return TemplateResponse|RedirectResponse
@@ -124,6 +125,8 @@ class RenewPasswordController extends Controller {
 
 	/**
 	 * @PublicPage
+	 * @NoCSRFRequired
+	 * @UseSession
 	 *
 	 * @param string $user
 	 * @param string $oldPassword
@@ -168,6 +171,7 @@ class RenewPasswordController extends Controller {
 	/**
 	 * @PublicPage
 	 * @NoCSRFRequired
+	 * @UseSession
 	 *
 	 * @return RedirectResponse
 	 */
