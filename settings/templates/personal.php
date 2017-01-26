@@ -272,6 +272,7 @@ if($_['passwordChangeSupported']) {
 		</tbody>
 	</table>
 </div>
+<?php /*?>
 
 <div id="apppasswords" class="section">
 	<h2><?php p($l->t('App passwords'));?></h2>
@@ -308,6 +309,7 @@ if($_['passwordChangeSupported']) {
 		</div>
 	</div>
 </div>
+<?php */?>
 
 <?php foreach($_['forms'] as $form) {
 	if (isset($form['form'])) {?>
