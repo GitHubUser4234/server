@@ -599,7 +599,7 @@ class User {
 					//pwdMaxAge=0 -> password never expires
 					//pwdExpireWarning=0 -> don't warn about expiry
 					if($pwdMaxAgeInt > 0 && $pwdExpireWarningInt > 0){
-						$pwdChangedTimeDt = \DateTime::createFromFormat('YmdhisZ', $pwdChangedTime[0]);
+						$pwdChangedTimeDt = \DateTime::createFromFormat('YmdHisZ', $pwdChangedTime[0]);
 						$pwdChangedTimeDt->add(new \DateInterval('PT'.$pwdMaxAgeInt.'S'));
 						$currentDateTime = new \DateTime();
 						$secondsToExpiry = $pwdChangedTimeDt->getTimestamp() - $currentDateTime->getTimestamp();
