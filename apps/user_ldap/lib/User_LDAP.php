@@ -198,7 +198,9 @@ class User_LDAP extends BackendUtility implements \OCP\IUserBackend, \OCP\UserIn
 				'. Maybe the LDAP entry has no set display name attribute?');
 		}
 		if($user->getUsername() !== false && $this->access->setPassword($user->getDN(), $password)) {
-			if (!empty($this->access->connection->ldapDefaultPPolicyDN) && (intval($this->access->connection->turnOnPasswordChange) === 1)) {
+			$ldapDefaultPPolicyDN = $this->access->connection->ldapDefaultPPolicyDN;
+			$turnOnPasswordChange = $this->access->connection->turnOnPasswordChange;
+			if (!empty($ldapDefaultPPolicyDN) && (intval($turnOnPasswordChange) === 1)) {
 				//remove last password expiry warning if any
 				$notification = $this->notificationManager->createNotification();
 				$notification->setApp('user_ldap')
