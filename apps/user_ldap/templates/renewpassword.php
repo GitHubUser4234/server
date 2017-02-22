@@ -1,6 +1,7 @@
 <?php /** @var $l OC_L10N */ ?>
 <?php
 script('core', [
+	'lostpassword',
 	'jquery-showpassword',
 ]);
 script('user_ldap', [
@@ -67,7 +68,7 @@ style('user_ldap', 'renewPassword');
 				<?php p($l->t('Cancel')); ?>
 			</a>
 		</p>
-		<input type="hidden" name="user" value="<?php p($_['user']) ?>">
+		<input type="hidden" name="user" id="user" value="<?php p($_['user']) ?>">
 		<input type="hidden" name="requesttoken" value="<?php p($_['requesttoken']) ?>">
 	</fieldset>
 </form>
