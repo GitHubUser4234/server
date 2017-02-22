@@ -64,6 +64,7 @@ abstract class Proxy {
 		static $groupMap;
 		static $db;
 		static $coreUserManager;
+		static $coreNotificationManager;
 		if(is_null($fs)) {
 			$ocConfig = \OC::$server->getConfig();
 			$fs       = new FilesystemHelper();
