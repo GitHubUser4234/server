@@ -94,7 +94,7 @@ OC.L10N.register(
     "Test Base DN" : "Testen basis DN",
     "Avoids automatic LDAP requests. Better for bigger setups, but requires some LDAP knowledge." : "Voorkom automatische LDAP opvragingen. Weliswaar beter voor grote installaties, maar vergt LDAP kennis.",
     "Manually enter LDAP filters (recommended for large directories)" : "Handmatig invoeren LDAP filters (aanbevolen voor grote directories)",
-    "%s access is limited to users meeting these criteria:" : "%s toegang is beperkt tot gebruikers die voldoen aan deze criteria:",
+    "Listing and searching for users is constrained by these criteria:" : "De volgende beperkingen voor gebruikers om te zoeken of een overzicht te verkrijgen zijn van toepassing:",
     "The most common object classes for users are organizationalPerson, person, user, and inetOrgPerson. If you are not sure which object class to select, please consult your directory admin." : "De meest gebruikelijke objectklassen voor gebruikers zijn organizationalPerson, persoon, gebruiker, en inetOrgPerson. Als je niet zeker weet welke objectklasse moet worden geselecteerd, raadpleeg dan je directorybeheerder.",
     "The filter specifies which LDAP users shall have access to the %s instance." : "Dit filter geeft aan welke LDAP gebruikers toegang hebben tot %s.",
     "Verify settings and count users" : "Verifiëren instellingen en tellen gebruikers",
