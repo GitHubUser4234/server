@@ -66,6 +66,9 @@ class Manager {
 	 * @return boolean
 	 */
 	public function isTwoFactorAuthenticated(IUser $user) {
+		if (TwoFactorAuthFilter::skipTwoFactorAuthentication($this->config)) {
+			return false;
+		}
 		$twoFactorEnabled = ((int) $this->config->getUserValue($user->getUID(), 'core', 'two_factor_auth_disabled', 0)) === 0;
 		return $twoFactorEnabled && count($this->getProviders($user)) > 0;
 	}
