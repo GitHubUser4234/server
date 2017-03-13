@@ -347,7 +347,7 @@ class Access extends LDAPUtility implements IUserTools {
 		try {
 			return $this->ldap->modReplace($cr, $userDN, $password);
 		} catch(ConstraintViolationException $e) {
-			throw new HintException('Password change rejected.', \OC::$server->getL10N('user_ldap')->t('Password change rejected. Hint: ').$e->getMessage(), $e->getCode());
+			throw new HintException('Password change rejected.', \OC::$server->getL10N('user_ldap')->t('Password change rejected. Hint: ').((strpos($e->getMessage(), 'dn="') === false)?$e->getMessage():"Password fails quality checking policy"), $e->getCode());
 		}
 	}
 
