@@ -1,7 +1,6 @@
 <?php /** @var $l OC_L10N */ ?>
 <?php
 script('core', [
-	'lostpassword',
 	'jquery-showpassword',
 ]);
 script('user_ldap', [
@@ -64,7 +63,7 @@ style('user_ldap', 'renewPassword');
 			</p>
 		<?php } ?>
 		<p id="cancel-container" class="info">
-			<a id="lost-password" href="<?php p($_['cancelLink']); ?>">
+			<a id="cancel" href="<?php p($_['cancelLink']); ?>">
 				<?php p($l->t('Cancel')); ?>
 			</a>
 		</p>
