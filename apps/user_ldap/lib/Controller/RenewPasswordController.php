@@ -84,7 +84,7 @@ class RenewPasswordController extends Controller {
 	 * @PublicPage
 	 * @NoCSRFRequired
 	 * @UseSession
-	 
+	 *
 	 * @param string $user
 	 *
 	 * @return TemplateResponse|RedirectResponse
