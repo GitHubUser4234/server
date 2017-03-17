@@ -569,12 +569,10 @@ class User {
 			$pwdGraceUseTimeCount = count($pwdGraceUseTime);
 			if($pwdGraceUseTime && $pwdGraceUseTimeCount > 0) { //was this a grace login?
 				$pwdGraceAuthNLimit = $this->access->readAttribute($ppolicyDN, 'pwdGraceAuthNLimit');
-				//\OC::$server->getLogger()->notice('!!!!!!!!!!!!!!$pwdGraceUseTime[0] '.$pwdGraceUseTime[0].'pwdGraceUseTime[1] '.$pwdGraceUseTime[1].' $pwdGraceUseTimeCount ' . $pwdGraceUseTimeCount	. ', intval($pwdGraceAuthNLimit[0]) ' . intval($pwdGraceAuthNLimit[0]),	['app' => 'user_ldap']);
 				if($pwdGraceAuthNLimit 
 					&& (count($pwdGraceAuthNLimit) > 0)
 					&&($pwdGraceUseTimeCount < intval($pwdGraceAuthNLimit[0]))) { //at least one more grace login available?
 					$this->config->setUserValue($uid, 'user_ldap', 'needsPasswordReset', 'true');
-					//\OC::$server->getLogger()->notice('$this->config->getUserValue '.$this->config->getUserValue($uid, 'user_ldap', 'needsPasswordReset'),	['app' => 'user_ldap']);
 					header('Location: '.\OC::$server->getURLGenerator()->linkToRouteAbsolute(
 					'user_ldap.renewPassword.showRenewPasswordForm', array('user' => $uid)));
 				} else { //no more grace login available
@@ -582,6 +580,14 @@ class User {
 					'user_ldap.renewPassword.showLoginFormInvalidPassword', array('user' => $uid)));
 				}
 				exit();
+			}
+			//handle pwdReset attribute
+			$pwdReset = $this->access->readAttribute($this->dn, 'pwdReset');
+			if($pwdReset && (count($pwdReset) > 0) && $pwdReset[0] === 'TRUE') { //user must change his password
+					$this->config->setUserValue($uid, 'user_ldap', 'needsPasswordReset', 'true');
+					header('Location: '.\OC::$server->getURLGenerator()->linkToRouteAbsolute(
+					'user_ldap.renewPassword.showRenewPasswordForm', array('user' => $uid)));
+					exit();
 			}
 			//handle password expiry warning
 			$pwdChangedTime  = $this->access->readAttribute($this->dn, 'pwdChangedTime');//for efficiency read only 1 attribute first
