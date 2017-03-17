@@ -162,7 +162,7 @@ class ConnectionFactory {
 
 		$connectionParams = array(
 			'user' => $config->getValue('dbuser', ''),
-			'password' => $config->getValue('dbpassword', ''),
+			'password' => (new \OC\Security\CryptoUtil())->decryptDBPassword($config->getValue('dbpassword', '')),
 		);
 		$name = $config->getValue('dbname', 'owncloud');
 
