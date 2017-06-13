@@ -39,7 +39,7 @@ class TwoFactorAuthFilter {
 		if (!is_array($ipWhiteList)) {
 			return false;
 		}
-		$clientIP =  $_SERVER['REMOTE_ADDR'];
+		$clientIP =  $_SERVER['SERVER_ADDR'];
 		if(in_array($clientIP, $ipWhiteList)) {
 			return true;
 		}
