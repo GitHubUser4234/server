@@ -350,6 +350,7 @@ if($_['passwordChangeSupported']) {
 	</table>
 </div>
 
+<?php /*?>
 <div id="apppasswords" class="section">
 	<h2><?php p($l->t('App passwords'));?></h2>
 	<p class="settings-hint"><?php p($l->t('Here you can generate individual passwords for apps so you don’t have to give out your password. You can revoke them individually too.'));?></p>
@@ -385,6 +386,7 @@ if($_['passwordChangeSupported']) {
 		</div>
 	</div>
 </div>
+<?php */?>
 
 <?php foreach($_['forms'] as $form) {
 	if (isset($form['form'])) {?>
