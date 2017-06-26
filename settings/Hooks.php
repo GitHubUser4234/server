@@ -63,7 +63,7 @@ class Hooks {
 	public function onChangePassword($uid) {
 		$user = $this->userManager->get($uid);
 
-		if (!$user instanceof IUser || $user->getEMailAddress() === null) {
+		if (true) {
 			return;
 		}
 
