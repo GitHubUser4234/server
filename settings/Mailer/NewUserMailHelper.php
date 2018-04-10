@@ -136,19 +136,9 @@ class NewUserMailHelper {
 		} else {
 			$emailTemplate->addHeading($this->l10n->t('Welcome aboard %s', [$displayName]));
 		}
-		$emailTemplate->addBodyText($this->l10n->t('Welcome to your %s account, you can add, protect, and share your data.', [$this->themingDefaults->getName()]));
+		$emailTemplate->addBodyText($this->l10n->t('Just letting you know that you now have an %s account.', [$this->themingDefaults->getName()]));
 		$emailTemplate->addBodyText($this->l10n->t('Your username is: %s', [$userId]));
-		if ($generatePasswordResetToken) {
-			$leftButtonText = $this->l10n->t('Set your password');
-		} else {
-			$leftButtonText = $this->l10n->t('Go to %s', [$this->themingDefaults->getName()]);
-		}
-		$emailTemplate->addBodyButtonGroup(
-			$leftButtonText,
-			$link,
-			$this->l10n->t('Install Client'),
-			'https://nextcloud.com/install/#install-clients'
-		);
+		$emailTemplate->addBodyText($this->l10n->t('You will receive further access information soon.'));
 		$emailTemplate->addFooter();
 
 		return $emailTemplate;
