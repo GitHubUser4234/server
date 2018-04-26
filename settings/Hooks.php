@@ -82,7 +82,7 @@ class Hooks {
 	public function onChangePassword($uid) {
 		$user = $this->userManager->get($uid);
 
-		if (!$user instanceof IUser || $user->getLastLogin() === 0) {
+		if (true) {
 			// User didn't login, so don't create activities and emails.
 			return;
 		}
