@@ -45,7 +45,7 @@ script('settings', [
 		<tbody class="token-list">
 		</tbody>
 	</table>
-	<div id="app-password-form">
+	<?php /*?><div id="app-password-form">
 		<input id="app-password-name" type="text" placeholder="<?php p($l->t('App name')); ?>">
 		<button id="add-app-password" class="button"><?php p($l->t('Create new app password')); ?></button>
 	</div>
@@ -64,5 +64,5 @@ script('settings', [
 			<a class="clipboardButton icon icon-clippy" data-clipboard-target="#new-app-password"></a>
 			<button id="app-password-hide" class="button"><?php p($l->t('Done')); ?></button>
 		</div>
-	</div>
+	</div><?php */?>
 </div>
